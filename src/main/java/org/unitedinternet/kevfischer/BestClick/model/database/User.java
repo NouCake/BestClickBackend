@@ -16,22 +16,15 @@ public class User {
     @Type(type="uuid-char")
     private UUID id;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY, optional = false)
     @PrimaryKeyJoinColumn(referencedColumnName = "profile_user_id")
+    @JoinColumn(nullable = false)
     private UserProfile profile;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY, optional = false)
     @PrimaryKeyJoinColumn(referencedColumnName = "app_user_id")
+    @JoinColumn(nullable = false)
     private UserAppData appData;
-
-    public User() {
-    }
-
-    public User(UUID id, UserProfile profile, UserAppData appData) {
-        this.id = id;
-        this.profile = profile;
-        this.appData = appData;
-    }
 
     public UserAppData getAppData() {
         return appData;

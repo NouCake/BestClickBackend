@@ -22,6 +22,7 @@ public class UserAppData {
 
     public UserAppData(User user, Long counter) {
         this.user = user;
+        this.userId = user.getId();
         this.counter = counter;
     }
 

@@ -29,6 +29,7 @@ public class UserProfile {
 
     public UserProfile(User user, String name, String pictureUrl, String email) {
         this.user = user;
+        this.userId = user.getId();
         this.name = name;
         this.pictureUrl = pictureUrl;
         this.email = email;

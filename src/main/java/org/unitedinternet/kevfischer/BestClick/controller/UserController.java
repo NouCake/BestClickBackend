@@ -60,8 +60,6 @@ public class UserController {
 
         UserProfile profile = new UserProfile(user, req.getName(), req.getProfile(), req.getEmail());
         UserAppData appData = new UserAppData(user, 0L);
-        appData.setUserId(user.getId());
-        profile.setUserId(user.getId());
 
         user.setProfile(profile);
         user.setAppData(appData);
