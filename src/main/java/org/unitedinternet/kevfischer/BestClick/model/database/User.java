@@ -18,12 +18,10 @@ public class User {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY, optional = false)
     @PrimaryKeyJoinColumn(referencedColumnName = "profile_user_id")
-    @JoinColumn(nullable = false)
     private UserProfile profile;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY, optional = false)
     @PrimaryKeyJoinColumn(referencedColumnName = "app_user_id")
-    @JoinColumn(nullable = false)
     private UserAppData appData;
 
     public UserAppData getAppData() {
