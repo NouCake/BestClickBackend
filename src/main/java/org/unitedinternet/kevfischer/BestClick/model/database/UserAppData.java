@@ -20,6 +20,9 @@ public class UserAppData {
     @JoinColumn(name="app_user_id")
     private User user;
 
+    private Long counter;
+
+
     public UserAppData(User user, Long counter) {
         this.user = user;
         this.userId = user.getId();
@@ -28,8 +31,6 @@ public class UserAppData {
 
     public UserAppData() {
     }
-
-    private Long counter;
 
     public UUID getUserId() {
         return userId;
