@@ -1,5 +1,6 @@
 package org.unitedinternet.kevfischer.BestClick.model.database;
 
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.Type;
 
@@ -7,8 +8,8 @@ import javax.persistence.*;
 import java.util.UUID;
 
 @Entity
-@Table(name = "user_app")
-public class UserAppData {
+@Table(name = "user_auth")
+public class UserAuthData {
 
     @Id
     @Type(type="uuid-char")
@@ -17,21 +18,22 @@ public class UserAppData {
     @JsonIgnore
     @MapsId
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="app_user_id")
+    @JoinColumn(name="auth_user_id")
     private User user;
 
-    private Long counter;
+    private String username;
+    private String passwordHash;
 
-
-    public UserAppData(User user, Long counter) {
+    public UserAuthData(User user, String username, String passwordHash) {
         this.user = user;
-        this.counter = counter;
+        this.username = username;
+        this.passwordHash = passwordHash;
 
         this.userId = user.getId();
-        user.setAppData(this);
+        user.setAuthData(this);
     }
 
-    public UserAppData() {
+    public UserAuthData() {
     }
 
     public UUID getUserId() {
@@ -50,11 +52,19 @@ public class UserAppData {
         this.user = user;
     }
 
-    public Long getCounter() {
-        return counter;
+    public String getUsername() {
+        return username;
     }
 
-    public void setCounter(Long counter) {
-        this.counter = counter;
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 }

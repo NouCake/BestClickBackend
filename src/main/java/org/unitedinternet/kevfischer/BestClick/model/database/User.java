@@ -1,6 +1,5 @@
 package org.unitedinternet.kevfischer.BestClick.model.database;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
@@ -23,6 +22,18 @@ public class User {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
     @PrimaryKeyJoinColumn(referencedColumnName = "app_user_id")
     private UserAppData appData;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY, optional = false)
+    @PrimaryKeyJoinColumn(referencedColumnName = "auth_user_id")
+    private UserAuthData authData;
+
+    public UserAuthData getAuthData() {
+        return authData;
+    }
+
+    public void setAuthData(UserAuthData authData) {
+        this.authData = authData;
+    }
 
     public UserAppData getAppData() {
         return appData;

@@ -11,6 +11,7 @@ import org.unitedinternet.kevfischer.BestClick.controller.service.RandomGenerato
 import org.unitedinternet.kevfischer.BestClick.model.RegisterRequest;
 import org.unitedinternet.kevfischer.BestClick.model.database.User;
 import org.unitedinternet.kevfischer.BestClick.model.database.UserAppData;
+import org.unitedinternet.kevfischer.BestClick.model.database.UserAuthData;
 import org.unitedinternet.kevfischer.BestClick.model.database.UserProfile;
 import org.unitedinternet.kevfischer.BestClick.model.repository.UserAppRepository;
 import org.unitedinternet.kevfischer.BestClick.model.repository.UserProfileRepository;
@@ -37,9 +38,7 @@ public class UserController {
 
     @GetMapping("/{uuid}")
     public User getUser(@PathVariable UUID uuid) {
-        var oUser = userRepository.findById(uuid);
-        if(oUser.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
-        return oUser.get();
+        return ControllerUtil.getOptionalOrThrow(userRepository.findById(uuid));
     }
 
     @GetMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -51,9 +50,7 @@ public class UserController {
 
     @GetMapping("/profile/{uuid}")
     public UserProfile getProfile(@PathVariable UUID uuid){
-        var oProfile = profileRepository.findById(uuid);
-        if(oProfile.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
-        return oProfile.get();
+        return ControllerUtil.getOptionalOrThrow(profileRepository.findById(uuid));
     }
 
     @GetMapping("/profiles")
@@ -70,14 +67,12 @@ public class UserController {
 
         UserProfile profile = new UserProfile(user, req.getName(), req.getProfile(), req.getEmail());
         UserAppData appData = new UserAppData(user, 0L);
-
-        user.setProfile(profile);
-        user.setAppData(appData);
+        UserAuthData authData = new UserAuthData(user, req.getUsername(),req.getPasswordHash());
 
         userRepository.save(user);
     }
 
-    @PostMapping("/random")
+    @PostMapping("/create/random")
     public void createRandomUser(@RequestParam int amount) {
         if(amount > 5000) throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
 
@@ -85,8 +80,9 @@ public class UserController {
         if(names == null) throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
 
         for (String name : names) {
-            String email = name.toLowerCase().replaceAll(" ", "") + "@email.com";
-            createUser(new RegisterRequest(name, email, null));
+            String username = name.toLowerCase().replaceAll(" ", "");
+            String email = username + "@email.com";
+            createUser(new RegisterRequest(username, "12345", name, email, null));
         }
     }
 
