@@ -17,7 +17,6 @@ dependencies {
 
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.data:spring-data-redis'
 	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-hibernate5:2.12.4'
 	implementation 'redis.clients:jedis'
 	implementation 'mysql:mysql-connector-java'

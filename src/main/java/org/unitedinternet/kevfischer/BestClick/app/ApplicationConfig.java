@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 
 @Configuration
@@ -20,6 +18,8 @@ public class ApplicationConfig {
         MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter(objectMapper);
         return converter;
     }
+
+    /*
     @Bean
     JedisConnectionFactory connectionFactory() {
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration("kevfischer.azubi.server.lan", 80);
@@ -27,7 +27,6 @@ public class ApplicationConfig {
         return new JedisConnectionFactory(config);
     }
 
-    /*
     @Bean
     public RedisTemplate<String, User> userTemplate() {
         RedisTemplate<String, User> template = new RedisTemplate<String, User>();
