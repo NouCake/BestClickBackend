@@ -30,6 +30,11 @@ public class UserController {
     @Autowired private UserAppRepository appRepository;
     @Autowired private RandomGeneratorService service;
 
+    @GetMapping("/hello")
+    public Iterable<User> hello(){
+        return userRepository.findAll();
+    }
+
     @GetMapping("/leaderboard")
     public List<UserAppData> getLeaderboard(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "50") int size){
         var data = appRepository.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "counter")));
@@ -38,7 +43,7 @@ public class UserController {
 
     @GetMapping("/{uuid}")
     public User getUser(@PathVariable UUID uuid) {
-        return ControllerUtil.getOptionalOrThrow(userRepository.findById(uuid));
+        return ControllerUtil.getOptionalOrThrowStatus(userRepository.findById(uuid));
     }
 
     @GetMapping(value = "/", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -50,7 +55,7 @@ public class UserController {
 
     @GetMapping("/profile/{uuid}")
     public UserProfile getProfile(@PathVariable UUID uuid){
-        return ControllerUtil.getOptionalOrThrow(profileRepository.findById(uuid));
+        return ControllerUtil.getOptionalOrThrowStatus(profileRepository.findById(uuid));
     }
 
     @GetMapping("/profiles")

@@ -1,5 +1,7 @@
 package org.unitedinternet.kevfischer.BestClick.model.database;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.util.Date;
 
@@ -7,6 +9,7 @@ import java.util.Date;
 @Table(name = "user_sessions")
 public class Session {
 
+    @JsonIgnore
     @Id
     @GeneratedValue
     private Long id;
