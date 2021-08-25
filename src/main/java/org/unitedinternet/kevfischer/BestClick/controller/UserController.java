@@ -67,7 +67,7 @@ public class UserController {
 
         UserProfile profile = new UserProfile(user, req.getName(), req.getProfile(), req.getEmail());
         UserAppData appData = new UserAppData(user, 0L);
-        UserAuthData authData = new UserAuthData(user, req.getUsername(),req.getPasswordHash());
+        UserAuthData authData = new UserAuthData(user, req.getUsername().toLowerCase(),req.getPasswordHash());
 
         userRepository.save(user);
     }

@@ -31,7 +31,7 @@ public class AuthedUserController {
 
     @GetMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request, @CookieValue(required = false) String oldSessionCookie){
-        UserAuthData auth = ControllerUtil.getOptionalOrThrow(authRepository.findByUsername(request.getUsername()));
+        UserAuthData auth = ControllerUtil.getOptionalOrThrow(authRepository.findByUsername(request.getUsername().toLowerCase()));
 
         if(!auth.getPasswordHash().equals(request.getPassword())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
