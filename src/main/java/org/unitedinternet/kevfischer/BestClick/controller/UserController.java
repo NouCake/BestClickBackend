@@ -58,7 +58,7 @@ public class UserController {
         return ControllerUtil.getOptionalOrThrowStatus(profileRepository.findById(uuid));
     }
 
-    @GetMapping("/profiles")
+    @PostMapping("/profiles")
     public List<UserProfile> getProfiles(@RequestBody List<UUID> uuids){
         List<UserProfile> profiles = new ArrayList<>(uuids.size());
         profileRepository.findAllById(uuids).forEach(profiles::add);

@@ -33,6 +33,7 @@ public class AuthentificationController {
             sessionRepository.delete(session);
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
+        session.getUser().getProfile().getName();
         return session;
     }
 
@@ -46,16 +47,16 @@ public class AuthentificationController {
 
         Session session = AuthentificationUtil.createNewSession(authData.getUserId());
         sessionRepository.save(session);
-
         ResponseCookie cookie = AuthentificationUtil.createCookieFromSession(session);
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(session);
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).build();
     }
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request){
         Session session = auth(request);
         sessionRepository.delete(session);
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, "").build();
+        ResponseCookie cookie = AuthentificationUtil.createCookieFromSession(session, 0); //delete cookie
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).build();
     }
 
 }

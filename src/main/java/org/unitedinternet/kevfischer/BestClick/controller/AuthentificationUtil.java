@@ -22,10 +22,14 @@ public class AuthentificationUtil {
         return session;
     }
 
-    public static ResponseCookie createCookieFromSession(Session session){
+    public static ResponseCookie createCookieFromSession(Session session) {
+        return createCookieFromSession(session, sessionExpireDuration.getSeconds());
+    }
+
+    public static ResponseCookie createCookieFromSession(Session session, long maxAge){
         return ResponseCookie.from("session", session.getSession())
                 .httpOnly(true)
-                .maxAge(sessionExpireDuration.getSeconds())
+                .maxAge(maxAge)
                 .sameSite("None")
                 .secure(true)
                 .build();
