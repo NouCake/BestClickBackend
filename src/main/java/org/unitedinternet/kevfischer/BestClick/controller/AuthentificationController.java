@@ -27,14 +27,7 @@ public class AuthentificationController {
 
     @GetMapping("/")
     public @ResponseBody Session auth(HttpServletRequest request){
-        String sessionId = ControllerUtil.getCookieOrThrowStatus(request, "session", HttpStatus.BAD_REQUEST);
-        Session session = ControllerUtil.getOptionalOrThrowStatus(sessionRepository.findBySession(sessionId), HttpStatus.UNAUTHORIZED);
-        if(AuthentificationUtil.isSessionExpired(session)) {
-            sessionRepository.delete(session);
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-        }
-        session.getUser().getProfile().getName();
-        return session;
+        return AuthentificationUtil.auth(sessionRepository, request);
     }
 
     @PostMapping("/login")
