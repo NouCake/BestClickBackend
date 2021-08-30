@@ -1,6 +1,7 @@
 package org.unitedinternet.kevfischer.BestClick.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import org.unitedinternet.kevfischer.BestClick.model.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 @RestController
@@ -67,12 +69,7 @@ public class UserController {
 
     @PostMapping("/create")
     public void createUser(@RequestBody RegisterRequest req) {
-        User user = new User();
-        user.setId(UUID.randomUUID());
-
-        UserProfile profile = new UserProfile(user, req.getName(), req.getProfile(), req.getEmail());
-        UserAppData appData = new UserAppData(user, 0L);
-        UserAuthData authData = new UserAuthData(user, req.getUsername().toLowerCase(),req.getPasswordHash());
+        User user = createUserFromRequest(req);
 
         userRepository.save(user);
     }
@@ -84,11 +81,34 @@ public class UserController {
         String[] names = service.getRandomUserName(amount).getBody();
         if(names == null) throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
 
+        Random r = new Random();
+
         for (String name : names) {
             String username = name.toLowerCase().replaceAll(" ", "");
             String email = username + "@email.com";
-            createUser(new RegisterRequest(username, "12345", name, email, null));
+            User user = createUserFromRequest(new RegisterRequest(username, "12345", name, email, null));
+
+            int profilePictureId = r.nextInt(41)+1;
+            user.getProfile().setPictureUrl("http://kevfischer.azubi.server.lan/data/profile-"+profilePictureId+".png");
+            user.getAppData().setCounter((long)r.nextInt(5000));
+            try {
+                userRepository.save(user);
+            } catch (DataAccessException e) {
+                System.out.println(e.getMostSpecificCause().getMessage());
+            }
+
         }
+
+    }
+
+    private User createUserFromRequest(RegisterRequest req){
+        User user = new User();
+        user.setId(UUID.randomUUID());
+
+        UserProfile profile = new UserProfile(user, req.getName(), req.getProfile(), req.getEmail());
+        UserAppData appData = new UserAppData(user, 0L);
+        UserAuthData authData = new UserAuthData(user, req.getUsername().toLowerCase(),req.getPasswordHash());
+        return user;
     }
 
 }
