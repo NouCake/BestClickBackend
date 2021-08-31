@@ -6,6 +6,8 @@ import com.fasterxml.jackson.datatype.hibernate5.Hibernate5Module;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class ApplicationConfig {
@@ -19,25 +21,20 @@ public class ApplicationConfig {
         return converter;
     }
 
-    /*
     @Bean
-    JedisConnectionFactory connectionFactory() {
-        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration("kevfischer.azubi.server.lan", 80);
-        //redisStandaloneConfiguration.setPassword(RedisPassword.of(""));
-        return new JedisConnectionFactory(config);
-    }
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry
+                        .addMapping("/**")
+                        .allowedOrigins("http://localhost:3000", "http://kevfischer.azubi.server.lan/",  "http://10.16.129.225:3000/")
+                        .allowedHeaders("*")
+                        .allowedMethods("*")
+                        .allowCredentials(true);
 
-    @Bean
-    public RedisTemplate<String, User> userTemplate() {
-        RedisTemplate<String, User> template = new RedisTemplate<String, User>();
-        template.setConnectionFactory(connectionFactory());
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setDefaultSerializer(new GenericJackson2JsonRedisSerializer());
-        template.setKeySerializer(new StringRedisSerializer());
-        template.setHashKeySerializer(new GenericJackson2JsonRedisSerializer());
-        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
-        return template;
+            }
+        };
     }
-    */
 
 }

@@ -1,6 +1,8 @@
 package org.unitedinternet.kevfischer.BestClick.app;
 
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -11,22 +13,16 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
+    public void configure(final WebSecurity web) {
+        web.ignoring().antMatchers(HttpMethod.OPTIONS);
+    }
+
+    @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http    .csrf().disable().cors().configurationSource(configurationSource())
+        http
+                .requiresChannel().anyRequest().requiresSecure()
                 .and()
-                .requiresChannel().anyRequest().requiresSecure();
+                .csrf().disable();
     }
 
-
-    private CorsConfigurationSource configurationSource() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOrigin("*");
-        config.addAllowedHeader("*");
-        config.addExposedHeader("*");
-        config.addAllowedMethod("*");
-        config.setAllowCredentials(true);
-        source.registerCorsConfiguration("/**", config);
-        return source;
-    }
 }
