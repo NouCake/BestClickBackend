@@ -8,7 +8,7 @@ import java.util.UUID;
 
 
 @Entity
-@Table(name = "user")
+@Table(name = "users")
 @PrimaryKeyJoinColumn(name="user_id")
 public class User {
 
