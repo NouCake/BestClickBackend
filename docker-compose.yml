@@ -1,0 +1,26 @@
+version: "3.9"
+services: 
+    proxy:
+        build: 
+            context:  ./
+            dockerfile: ./docker/nginx/Dockerfile
+        ports: 
+            - "80:80"
+            - "443:443"
+    database:
+        build: 
+            context:  ./
+            dockerfile: ./docker/db/Dockerfile
+        ports: 
+            - "3306:5432"
+        environment: 
+            POSTGRES_USER: "springuser"
+            POSTGRES_PASSWORD: "ThePassword"
+            POSTGRES_DB: "bestclick"
+    spring:
+        build: 
+            context: ./
+            dockerfile: ./docker/spring/Dockerfile
+        ports: 
+            - "8080:8080"
+            - "8443:8443"

@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'org.unitedinternet.kevfischer'
-version = '0.1.0-RELEASE'
+version = '1.0.0-RELEASE'
 sourceCompatibility = '16'
 
 repositories {
@@ -24,8 +24,4 @@ dependencies {
 	implementation 'mysql:mysql-connector-java'
 
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-}
-
-test {
-	useJUnitPlatform()
 }
