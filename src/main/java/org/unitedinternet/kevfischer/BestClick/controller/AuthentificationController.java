@@ -37,7 +37,9 @@ public class AuthentificationController {
 
         org.unitedinternet.kevfischer.BestClick.model.database.Session dbSession = new org.unitedinternet.kevfischer.BestClick.model.database.Session();
         User user = new User();
+        user.setId(rSession.getUserId());
         user.setProfile(ControllerUtil.getOptionalOrThrowStatus(profileRepository.findById(rSession.getUserId())));
+        user.setAppData(ControllerUtil.getOptionalOrThrowStatus(appRepository.findById(rSession.getUserId())));
         dbSession.setUser(user);
         dbSession.setSession(rSession.getSession());
         dbSession.setExpires(rSession.getExpires());
