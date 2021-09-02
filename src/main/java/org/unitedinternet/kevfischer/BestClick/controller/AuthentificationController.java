@@ -10,27 +10,38 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.unitedinternet.kevfischer.BestClick.model.AuthRequest;
-import org.unitedinternet.kevfischer.BestClick.model.database.Session;
+import org.unitedinternet.kevfischer.BestClick.model.database.User;
+import org.unitedinternet.kevfischer.BestClick.model.redis.Session;
 import org.unitedinternet.kevfischer.BestClick.model.database.UserAuthData;
-import org.unitedinternet.kevfischer.BestClick.model.repository.SessionRepository;
+import org.unitedinternet.kevfischer.BestClick.model.repository.RSessionRepository;
+import org.unitedinternet.kevfischer.BestClick.model.repository.UserAppRepository;
 import org.unitedinternet.kevfischer.BestClick.model.repository.UserAuthRepository;
+import org.unitedinternet.kevfischer.BestClick.model.repository.UserProfileRepository;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.UUID;
 
 @Controller
 @RequestMapping("/auth")
 public class AuthentificationController {
 
 
-    @Autowired private SessionRepository sessionRepository;
+    @Autowired private RSessionRepository sessionRepository;
     @Autowired private UserAuthRepository authRepository;
+    @Autowired private UserProfileRepository profileRepository;
+    @Autowired private UserAppRepository appRepository;
 
     @GetMapping("/")
-    public @ResponseBody Session auth(HttpServletRequest request){
-        Session session = AuthentificationUtil.auth(sessionRepository, request);
-        session.getUser().getProfile().getName();
-        session.getUser().getAppData().getCounter();
-        return session;
+    public @ResponseBody org.unitedinternet.kevfischer.BestClick.model.database.Session auth(HttpServletRequest request){
+        Session rSession = AuthentificationUtil.auth(sessionRepository, request);
+
+        org.unitedinternet.kevfischer.BestClick.model.database.Session dbSession = new org.unitedinternet.kevfischer.BestClick.model.database.Session();
+        User user = new User();
+        user.setProfile(ControllerUtil.getOptionalOrThrowStatus(profileRepository.findById(rSession.getUserId())));
+        dbSession.setUser(user);
+        dbSession.setSession(rSession.getSession());
+        dbSession.setExpires(rSession.getExpires());
+        return dbSession;
     }
 
     @PostMapping("/login")
@@ -42,16 +53,16 @@ public class AuthentificationController {
         }
 
         Session session = AuthentificationUtil.createNewSession(authData.getUserId());
-        sessionRepository.saveSession(session.getExpires(), session.getUser().getId(), session.getSession());
-        //sessionRepository.save(session);
+        //sessionRepository.saveSession(session.getExpires(), session.getUser().getId(), session.getSession());
+        sessionRepository.save(session);
         ResponseCookie cookie = AuthentificationUtil.createCookieFromSession(session);
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).build();
     }
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request){
-        Session session = auth(request);
-        sessionRepository.delete(session);
+        String session = auth(request).getSession().toString();
+        sessionRepository.deleteById(UUID.fromString(session));
         ResponseCookie cookie = AuthentificationUtil.createCookieFromSession(session, 0); //delete cookie
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).build();
     }

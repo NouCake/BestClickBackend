@@ -6,10 +6,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
-import org.unitedinternet.kevfischer.BestClick.model.database.Session;
-import org.unitedinternet.kevfischer.BestClick.model.database.User;
-import org.unitedinternet.kevfischer.BestClick.model.database.UserAppData;
-import org.unitedinternet.kevfischer.BestClick.model.repository.SessionRepository;
+import org.unitedinternet.kevfischer.BestClick.model.redis.Session;
+import org.unitedinternet.kevfischer.BestClick.model.repository.RSessionRepository;
 import org.unitedinternet.kevfischer.BestClick.model.repository.UserAppRepository;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,13 +17,13 @@ import javax.servlet.http.HttpServletRequest;
 public class AppController {
 
     @Autowired private UserAppRepository appRepository;
-    @Autowired private SessionRepository sessionRepository;
+    @Autowired private RSessionRepository sessionRepository;
 
     @PostMapping("/add")
     @ResponseStatus(HttpStatus.OK)
     public void add(HttpServletRequest request){
         Session session = AuthentificationUtil.auth(sessionRepository, request);
-        appRepository.incrCounter(1, session.getUser().getId().toString());
+        appRepository.incrCounter(1, session.getUserId().toString());
     }
 
 }
