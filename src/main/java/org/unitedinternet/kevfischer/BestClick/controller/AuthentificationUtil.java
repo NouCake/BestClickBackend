@@ -21,13 +21,11 @@ public class AuthentificationUtil {
 
     public static Session auth(SessionRepository sessionRepository, HttpServletRequest request) throws ResponseStatusException{
         String sessionId = ControllerUtil.getCookieOrThrowStatus(request, "session", HttpStatus.BAD_REQUEST);
-        Session session = ControllerUtil.getOptionalOrThrowStatus(sessionRepository.findBySession(sessionId), HttpStatus.UNAUTHORIZED);
+        Session session = ControllerUtil.getOptionalOrThrowStatus(sessionRepository.findBySession(UUID.fromString(sessionId)), HttpStatus.UNAUTHORIZED);
         if(AuthentificationUtil.isSessionExpired(session)) {
             sessionRepository.delete(session);
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
-        session.getUser().getProfile().getName();
-        session.getUser().getAppData().getCounter();
         return session;
     }
 
@@ -37,7 +35,7 @@ public class AuthentificationUtil {
         Session session = new Session();
         session.setUser(new User(userId));
         session.setExpires(new Date(sessionExpireDuration.toMillis() + System.currentTimeMillis()));
-        session.setSession(UUID.randomUUID().toString());
+        session.setSession(UUID.randomUUID());
         return session;
     }
 
@@ -46,7 +44,7 @@ public class AuthentificationUtil {
     }
 
     public static ResponseCookie createCookieFromSession(Session session, long maxAge){
-        return ResponseCookie.from("session", session.getSession())
+        return ResponseCookie.from("session", session.getSession().toString())
                 .httpOnly(true)
                 .maxAge(maxAge)
                 .path("/")

@@ -27,7 +27,10 @@ public class AuthentificationController {
 
     @GetMapping("/")
     public @ResponseBody Session auth(HttpServletRequest request){
-        return AuthentificationUtil.auth(sessionRepository, request);
+        Session session = AuthentificationUtil.auth(sessionRepository, request);
+        session.getUser().getProfile().getName();
+        session.getUser().getAppData().getCounter();
+        return session;
     }
 
     @PostMapping("/login")
@@ -39,7 +42,8 @@ public class AuthentificationController {
         }
 
         Session session = AuthentificationUtil.createNewSession(authData.getUserId());
-        sessionRepository.save(session);
+        sessionRepository.saveSession(session.getExpires(), session.getUser().getId(), session.getSession());
+        //sessionRepository.save(session);
         ResponseCookie cookie = AuthentificationUtil.createCookieFromSession(session);
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).build();
     }

@@ -1,35 +1,26 @@
 package org.unitedinternet.kevfischer.BestClick.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
 @Table(name = "user_sessions")
 public class Session {
 
-    @JsonIgnore
-    @Id
-    @GeneratedValue
-    private Long id;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session_user_id")
     private User user;
 
+    @Id
     @Column(unique = true)
-    private String session;
+    @Type(type="uuid-char")
+    private UUID session;
 
     private Date expires;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
 
     public User getUser() {
         return user;
@@ -39,11 +30,11 @@ public class Session {
         this.user = user;
     }
 
-    public String getSession() {
+    public UUID getSession() {
         return session;
     }
 
-    public void setSession(String session) {
+    public void setSession(UUID session) {
         this.session = session;
     }
 

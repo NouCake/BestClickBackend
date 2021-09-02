@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.unitedinternet.kevfischer.BestClick.model.database.Session;
+import org.unitedinternet.kevfischer.BestClick.model.database.User;
 import org.unitedinternet.kevfischer.BestClick.model.database.UserAppData;
 import org.unitedinternet.kevfischer.BestClick.model.repository.SessionRepository;
 import org.unitedinternet.kevfischer.BestClick.model.repository.UserAppRepository;
@@ -24,10 +25,7 @@ public class AppController {
     @ResponseStatus(HttpStatus.OK)
     public void add(HttpServletRequest request){
         Session session = AuthentificationUtil.auth(sessionRepository, request);
-
-        UserAppData appdata = session.getUser().getAppData();
-        appdata.setCounter(appdata.getCounter()+1);
-        appRepository.save(appdata);
+        appRepository.incrCounter(1, session.getUser().getId().toString());
     }
 
 }
