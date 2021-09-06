@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.unitedinternet.kevfischer.BestClick.model.database.Session;
+import org.unitedinternet.kevfischer.BestClick.model.redis.RedisCache;
 import org.unitedinternet.kevfischer.BestClick.model.repository.SessionRepository;
 import org.unitedinternet.kevfischer.BestClick.model.repository.UserAppRepository;
 
@@ -18,11 +19,12 @@ public class AppController {
 
     @Autowired private UserAppRepository appRepository;
     @Autowired private SessionRepository sessionRepository;
+    @Autowired private RedisCache redisCache;
 
     @PostMapping("/add")
     @ResponseStatus(HttpStatus.OK)
     public void add(HttpServletRequest request){
-        Session session = AuthentificationUtil.auth(sessionRepository, request);
+        Session session = AuthentificationUtil.auth(redisCache, sessionRepository, request);
         appRepository.incrCounter(1, session.toString());
     }
 

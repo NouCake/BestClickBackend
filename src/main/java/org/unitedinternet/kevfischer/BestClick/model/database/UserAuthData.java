@@ -5,11 +5,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.UUID;
 
 @Entity
 @Table(name = "user_auth")
-public class UserAuthData {
+public class UserAuthData implements Serializable {
 
     @Id
     @Type(type="uuid-char")

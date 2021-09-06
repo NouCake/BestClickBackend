@@ -13,6 +13,7 @@ import org.unitedinternet.kevfischer.BestClick.model.AuthRequest;
 import org.unitedinternet.kevfischer.BestClick.model.database.User;
 import org.unitedinternet.kevfischer.BestClick.model.database.UserAuthData;
 import org.unitedinternet.kevfischer.BestClick.model.database.Session;
+import org.unitedinternet.kevfischer.BestClick.model.redis.RedisCache;
 import org.unitedinternet.kevfischer.BestClick.model.repository.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,6 +24,7 @@ import java.util.UUID;
 public class AuthentificationController {
 
 
+    @Autowired private RedisCache redisCache;
     @Autowired private SessionRepository sessionRepository;
     @Autowired private UserAuthRepository authRepository;
     @Autowired private UserProfileRepository profileRepository;
@@ -30,7 +32,7 @@ public class AuthentificationController {
 
     @GetMapping("/")
     public @ResponseBody Session auth(HttpServletRequest request){
-        Session session = AuthentificationUtil.auth(sessionRepository, request);
+        Session session = AuthentificationUtil.auth(redisCache, sessionRepository, request);
 
         User user = session.getUser();
         user.setProfile(ControllerUtil.getOptionalOrThrowStatus(profileRepository.findById(user.getId())));
@@ -53,8 +55,9 @@ public class AuthentificationController {
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request){
-        String session = AuthentificationUtil.auth(sessionRepository, request).getSession().toString();
+        String session = AuthentificationUtil.auth(redisCache, sessionRepository, request).getSession().toString();
         sessionRepository.deleteById(UUID.fromString(session));
+        redisCache.uncache(UUID.fromString(session));
         ResponseCookie cookie = AuthentificationUtil.createCookieFromSession(session, 0); //delete cookie
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).build();
     }

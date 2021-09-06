@@ -4,13 +4,14 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.UUID;
 
 
 @Entity
 @Table(name = "users")
 @PrimaryKeyJoinColumn(name="user_id")
-public class User {
+public class User implements Serializable {
 
     @Id
     @Column(name="user_id")

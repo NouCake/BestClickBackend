@@ -4,8 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.SetOperations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -13,12 +11,11 @@ import org.springframework.web.server.ResponseStatusException;
 import org.unitedinternet.kevfischer.BestClick.controller.service.RandomGeneratorService;
 import org.unitedinternet.kevfischer.BestClick.model.RegisterRequest;
 import org.unitedinternet.kevfischer.BestClick.model.database.*;
-import org.unitedinternet.kevfischer.BestClick.model.redis.LeaderboardCache;
+import org.unitedinternet.kevfischer.BestClick.model.redis.RedisCache;
 import org.unitedinternet.kevfischer.BestClick.model.repository.UserAppRepository;
 import org.unitedinternet.kevfischer.BestClick.model.repository.UserProfileRepository;
 import org.unitedinternet.kevfischer.BestClick.model.repository.UserRepository;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -33,7 +30,7 @@ public class UserController {
     @Autowired private UserAppRepository appRepository;
     @Autowired private RandomGeneratorService service;
 
-    @Autowired private LeaderboardCache leaderboardCache;
+    @Autowired private RedisCache leaderboardCache;
 
     @GetMapping("/hello")
     public Iterable<User> hello(){

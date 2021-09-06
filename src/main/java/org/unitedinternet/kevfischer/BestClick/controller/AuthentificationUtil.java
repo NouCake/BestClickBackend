@@ -7,6 +7,7 @@ import org.unitedinternet.kevfischer.BestClick.model.AuthRequest;
 import org.unitedinternet.kevfischer.BestClick.model.database.Session;
 import org.unitedinternet.kevfischer.BestClick.model.database.User;
 import org.unitedinternet.kevfischer.BestClick.model.database.UserAuthData;
+import org.unitedinternet.kevfischer.BestClick.model.redis.RedisCache;
 import org.unitedinternet.kevfischer.BestClick.model.repository.SessionRepository;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,9 +18,14 @@ import java.util.UUID;
 public class AuthentificationUtil {
 
 
-    public static Session auth(SessionRepository sessionRepository, HttpServletRequest request) throws ResponseStatusException{
+    public static Session auth(RedisCache cache, SessionRepository sessionRepository, HttpServletRequest request) throws ResponseStatusException{
         String sessionId = ControllerUtil.getCookieOrThrowStatus(request, "session", HttpStatus.BAD_REQUEST);
-        Session session = ControllerUtil.getOptionalOrThrowStatus(sessionRepository.findById(UUID.fromString(sessionId)), HttpStatus.UNAUTHORIZED);
+        Session session = cache.getSession(UUID.fromString(sessionId));
+        if(session == null) {
+            session = ControllerUtil.getOptionalOrThrowStatus(sessionRepository.findById(UUID.fromString(sessionId)), HttpStatus.UNAUTHORIZED);
+            cache.cache(session);
+        }
+
         if(AuthentificationUtil.isSessionExpired(session)) {
             sessionRepository.delete(session);
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
