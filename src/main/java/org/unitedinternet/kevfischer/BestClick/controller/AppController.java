@@ -3,10 +3,7 @@ package org.unitedinternet.kevfischer.BestClick.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.*;
 import org.unitedinternet.kevfischer.BestClick.model.database.Session;
 import org.unitedinternet.kevfischer.BestClick.model.redis.RedisCache;
 import org.unitedinternet.kevfischer.BestClick.model.repository.SessionRepository;
@@ -24,9 +21,9 @@ public class AppController {
 
     @PostMapping("/add")
     @ResponseStatus(HttpStatus.OK)
-    public @ResponseBody int add(HttpServletRequest request){
+    public @ResponseBody int add(HttpServletRequest request, @RequestParam(defaultValue = "1") int counter){
         Session session = AuthentificationUtil.auth(redisCache, sessionRepository, request);
-        return appRepository.incrCounter(1, session.getUser().getId().toString());
+        return appRepository.incrCounter(counter, session.getUser().getId().toString());
     }
 
 }
