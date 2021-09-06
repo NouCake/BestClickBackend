@@ -1,6 +1,8 @@
 package org.unitedinternet.kevfischer.BestClick.model.redis;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.data.redis.core.ValueOperations;
 import org.unitedinternet.kevfischer.BestClick.model.database.LeaderboardPage;
 import org.unitedinternet.kevfischer.BestClick.model.database.Session;
@@ -17,7 +19,7 @@ public class RedisCache {
     private static final Duration sessionDuration = Duration.ofDays(7);
 
     @Resource(name = "lbTemplate") private ValueOperations<String, LeaderboardPage> lbOperations;
-    @Resource(name = "sessionTemplate") private ValueOperations<String, Session> sessionOperations;
+    @Resource(name = "sessionTemplate") private HashOperations<String, String, Session> sessionOperations;
 
     public LeaderboardPage getPage(int size, int page){
         String key = getKeyForPage(size, page);
@@ -29,14 +31,16 @@ public class RedisCache {
         lbOperations.set(getKeyForPage(lbPage), lbPage, cacheDuration);
     }
     public void cache(Session session){
-        sessionOperations.set(getKeyForSession(session), session, sessionDuration);
+        sessionOperations.put("sessions", session.getSession().toString(), session);
+        //sessionOperations.set(getKeyForSession(session), session, sessionDuration);
     }
     public void uncache(UUID session) {
-        sessionOperations.set(getKeyForSession(session), null, 1, TimeUnit.MILLISECONDS);
+        sessionOperations.delete("sessions", session.toString());
+        //sessionOperations.set(getKeyForSession(session), null, 1, TimeUnit.MILLISECONDS);
     }
 
     public Session getSession(UUID sessionId) {
-        return sessionOperations.get(getKeyForSession(sessionId));
+        return sessionOperations.get("sessions", sessionId.toString());
     }
 
 
