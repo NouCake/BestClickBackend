@@ -4,9 +4,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.server.ResponseStatusException;
 import org.unitedinternet.kevfischer.BestClick.model.AuthRequest;
-import org.unitedinternet.kevfischer.BestClick.model.redis.Session;
+import org.unitedinternet.kevfischer.BestClick.model.database.Session;
+import org.unitedinternet.kevfischer.BestClick.model.database.User;
 import org.unitedinternet.kevfischer.BestClick.model.database.UserAuthData;
-import org.unitedinternet.kevfischer.BestClick.model.repository.RSessionRepository;
+import org.unitedinternet.kevfischer.BestClick.model.repository.SessionRepository;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.Duration;
@@ -16,7 +17,7 @@ import java.util.UUID;
 public class AuthentificationUtil {
 
 
-    public static Session auth(RSessionRepository sessionRepository, HttpServletRequest request) throws ResponseStatusException{
+    public static Session auth(SessionRepository sessionRepository, HttpServletRequest request) throws ResponseStatusException{
         String sessionId = ControllerUtil.getCookieOrThrowStatus(request, "session", HttpStatus.BAD_REQUEST);
         Session session = ControllerUtil.getOptionalOrThrowStatus(sessionRepository.findById(UUID.fromString(sessionId)), HttpStatus.UNAUTHORIZED);
         if(AuthentificationUtil.isSessionExpired(session)) {
@@ -30,7 +31,7 @@ public class AuthentificationUtil {
 
     public static Session createNewSession(UUID userId) {
         Session session = new Session();
-        session.setUserId(userId);
+        session.setUser(new User(userId));
         session.setExpires(new Date(sessionExpireDuration.toMillis() + System.currentTimeMillis()));
         session.setSession(UUID.randomUUID());
         return session;

@@ -4,11 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.Type;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.UUID;
 
 @Entity
 @Table(name = "user_app")
-public class UserAppData {
+public class UserAppData implements Serializable {
 
     @Id
     @Type(type="uuid-char")

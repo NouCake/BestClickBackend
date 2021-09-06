@@ -4,20 +4,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.SetOperations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.unitedinternet.kevfischer.BestClick.controller.service.RandomGeneratorService;
 import org.unitedinternet.kevfischer.BestClick.model.RegisterRequest;
-import org.unitedinternet.kevfischer.BestClick.model.database.User;
-import org.unitedinternet.kevfischer.BestClick.model.database.UserAppData;
-import org.unitedinternet.kevfischer.BestClick.model.database.UserAuthData;
-import org.unitedinternet.kevfischer.BestClick.model.database.UserProfile;
+import org.unitedinternet.kevfischer.BestClick.model.database.*;
+import org.unitedinternet.kevfischer.BestClick.model.redis.LeaderboardCache;
 import org.unitedinternet.kevfischer.BestClick.model.repository.UserAppRepository;
 import org.unitedinternet.kevfischer.BestClick.model.repository.UserProfileRepository;
 import org.unitedinternet.kevfischer.BestClick.model.repository.UserRepository;
 
+import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -32,6 +33,8 @@ public class UserController {
     @Autowired private UserAppRepository appRepository;
     @Autowired private RandomGeneratorService service;
 
+    @Autowired private LeaderboardCache leaderboardCache;
+
     @GetMapping("/hello")
     public Iterable<User> hello(){
         return userRepository.findAll();
@@ -39,7 +42,11 @@ public class UserController {
 
     @GetMapping("/leaderboard")
     public List<UserAppData> getLeaderboard(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "50") int size){
+        LeaderboardPage lbPage = leaderboardCache.getPage(size, page);
+        if(lbPage != null) return lbPage.getUsers();
+
         var data = appRepository.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "counter")));
+        leaderboardCache.cache(new LeaderboardPage(size, page, data));
         return data;
     }
 

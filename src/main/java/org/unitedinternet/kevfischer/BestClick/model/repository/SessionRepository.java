@@ -14,7 +14,8 @@ import java.util.UUID;
 @Repository
 public interface SessionRepository extends CrudRepository<Session, UUID> {
 
-    Optional<Session> findBySession(UUID session);
+    @Override
+    Optional<Session> findById(UUID uuid);
 
     @Modifying
     @Transactional
