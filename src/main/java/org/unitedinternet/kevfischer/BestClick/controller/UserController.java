@@ -119,8 +119,8 @@ public class UserController {
 
         UserProfile profile = ControllerUtil.getOptionalOrThrowStatus(profileRepository.findById(session.getUser().getId()));
         if(json.containsKey("name")) profile.setName(json.get("name"));
-        if(json.containsKey("email")) profile.setName(json.get("email"));
-        if(json.containsKey("pictureUrl")) profile.setName(json.get("pictureUrl"));
+        if(json.containsKey("email")) profile.setEmail(json.get("email"));
+        if(json.containsKey("pictureUrl")) profile.setPictureUrl(json.get("pictureUrl"));
 
         profileRepository.save(profile);
     }
