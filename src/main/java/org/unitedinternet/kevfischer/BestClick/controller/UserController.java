@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.lang.Nullable;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -14,15 +15,14 @@ import org.unitedinternet.kevfischer.BestClick.controller.service.RandomGenerato
 import org.unitedinternet.kevfischer.BestClick.model.RegisterRequest;
 import org.unitedinternet.kevfischer.BestClick.model.database.*;
 import org.unitedinternet.kevfischer.BestClick.model.redis.RedisCache;
+import org.unitedinternet.kevfischer.BestClick.model.repository.SessionRepository;
 import org.unitedinternet.kevfischer.BestClick.model.repository.UserAppRepository;
 import org.unitedinternet.kevfischer.BestClick.model.repository.UserProfileRepository;
 import org.unitedinternet.kevfischer.BestClick.model.repository.UserRepository;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/user")
@@ -33,7 +33,8 @@ public class UserController {
     @Autowired private UserAppRepository appRepository;
     @Autowired private RandomGeneratorService service;
 
-    @Autowired private RedisCache leaderboardCache;
+    @Autowired private RedisCache redisCache;
+    @Autowired private SessionRepository sessionRepository;
 
     @GetMapping("/hello")
     public Iterable<User> hello(){
@@ -42,11 +43,11 @@ public class UserController {
 
     @GetMapping("/leaderboard")
     public List<UserAppData> getLeaderboard(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "50") int size){
-        LeaderboardPage lbPage = leaderboardCache.getPage(size, page);
+        LeaderboardPage lbPage = redisCache.getPage(size, page);
         if(lbPage != null) return lbPage.getUsers();
 
         var data = appRepository.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "counter")));
-        leaderboardCache.cache(new LeaderboardPage(size, page, data));
+        redisCache.cache(new LeaderboardPage(size, page, data));
         return data;
     }
 
@@ -83,7 +84,6 @@ public class UserController {
         } catch (DataIntegrityViolationException e ) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Already in Use");
         }
-
     }
 
     @PostMapping("/create/random")
@@ -111,6 +111,18 @@ public class UserController {
 
         }
 
+    }
+
+    @PostMapping("/update/")
+    public void updateUser(HttpServletRequest request, @RequestBody Map<String, String> json) {
+        Session session = AuthentificationUtil.auth(redisCache, sessionRepository, request);
+
+        UserProfile profile = ControllerUtil.getOptionalOrThrowStatus(profileRepository.findById(session.getUser().getId()));
+        if(json.containsKey("name")) profile.setName(json.get("name"));
+        if(json.containsKey("email")) profile.setName(json.get("email"));
+        if(json.containsKey("pictureUrl")) profile.setName(json.get("pictureUrl"));
+
+        profileRepository.save(profile);
     }
 
     private User createUserFromRequest(RegisterRequest req){
