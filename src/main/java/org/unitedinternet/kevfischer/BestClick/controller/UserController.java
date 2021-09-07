@@ -2,10 +2,12 @@ package org.unitedinternet.kevfischer.BestClick.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.unitedinternet.kevfischer.BestClick.controller.service.RandomGeneratorService;
@@ -16,6 +18,7 @@ import org.unitedinternet.kevfischer.BestClick.model.repository.UserAppRepositor
 import org.unitedinternet.kevfischer.BestClick.model.repository.UserProfileRepository;
 import org.unitedinternet.kevfischer.BestClick.model.repository.UserRepository;
 
+import javax.validation.Valid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -72,10 +75,15 @@ public class UserController {
     }
 
     @PostMapping("/create")
-    public void createUser(@RequestBody RegisterRequest req) {
+    public void createUser(@RequestBody @Valid RegisterRequest req) {
         User user = createUserFromRequest(req);
 
-        userRepository.save(user);
+        try {
+            userRepository.save(user);
+        } catch (DataIntegrityViolationException e ) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Already in Use");
+        }
+
     }
 
     @PostMapping("/create/random")
@@ -111,7 +119,9 @@ public class UserController {
 
         UserProfile profile = new UserProfile(user, req.getName(), req.getProfile(), req.getEmail());
         UserAppData appData = new UserAppData(user, 0L);
-        UserAuthData authData = new UserAuthData(user, req.getUsername().toLowerCase(),req.getPasswordHash());
+
+        String password = BCrypt.hashpw(req.getPassword(), BCrypt.gensalt(10));
+        UserAuthData authData = new UserAuthData(user, req.getUsername().toLowerCase(), password);
         return user;
     }
 

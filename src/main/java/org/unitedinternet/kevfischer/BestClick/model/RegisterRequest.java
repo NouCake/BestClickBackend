@@ -1,20 +1,23 @@
 package org.unitedinternet.kevfischer.BestClick.model;
 
+
+import javax.validation.constraints.NotNull;
+
 public class RegisterRequest {
 
-    private String username;
-    private String passwordHash;
+    @NotNull private String username;
+    @NotNull private String password;
 
-    private String name;
+    @NotNull private String name;
     private String email;
     private String profile;
 
     public RegisterRequest() {
     }
 
-    public RegisterRequest(String username, String passwordHash, String name, String email, String profile) {
+    public RegisterRequest(String username, String password, String name, String email, String profile) {
         this.username = username;
-        this.passwordHash = passwordHash;
+        this.password = password;
         this.name = name;
         this.email = email;
         this.profile = profile;
@@ -28,12 +31,12 @@ public class RegisterRequest {
         this.username = username;
     }
 
-    public String getPasswordHash() {
-        return passwordHash;
+    public String getPassword() {
+        return password;
     }
 
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getProfile() {

@@ -2,6 +2,7 @@ package org.unitedinternet.kevfischer.BestClick.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.web.server.ResponseStatusException;
 import org.unitedinternet.kevfischer.BestClick.model.AuthRequest;
 import org.unitedinternet.kevfischer.BestClick.model.database.Session;
@@ -58,7 +59,7 @@ public class AuthentificationUtil {
     }
 
     public static boolean authUser(UserAuthData authData, AuthRequest request){
-        return authData.getPasswordHash().equals(request.getPassword());
+        return BCrypt.checkpw(request.getPassword(), authData.getPasswordHash());
     }
 
     public static boolean isSessionExpired(Session session){
