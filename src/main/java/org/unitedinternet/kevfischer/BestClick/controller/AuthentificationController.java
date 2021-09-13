@@ -72,6 +72,7 @@ public class AuthentificationController {
         Ticket cachedTicket = redisCache.getTicket(bestTicket);
         if(cachedTicket == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "no ticket");
         cachedTicket.setProvider(Ticket.PROVIDER.INSIDE);
+        cachedTicket.setProviderTicket(ticket);
         cachedTicket.setStatus(Ticket.STATUS.GOT);
 
         redisCache.cache(cachedTicket);
