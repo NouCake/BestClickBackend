@@ -53,7 +53,6 @@ public class AuthentificationController {
             values.put("action", "REGISTER");
             values.put("username", e.getInfo().getUsername());
             values.put("name", e.getInfo().getName());
-
             return new ResponseEntity<>(values, HttpStatus.OK);
         }
         if(user == null) {

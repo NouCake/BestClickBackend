@@ -30,6 +30,8 @@ import java.util.*;
 @RequestMapping("/user")
 public class UserController {
 
+    private final static int MAX_PROFILE_ID = 41;
+
     @Autowired private UserRepository userRepository;
     @Autowired private UserProfileRepository profileRepository;
     @Autowired private UserAppRepository appRepository;
@@ -79,12 +81,16 @@ public class UserController {
 
     @PostMapping("/create")
     public void createUser(@RequestBody @Valid RegisterRequest req) {
+        if(req.getProfile() == null || req.getProfile().equals("")) {
+            int profilePictureId = new Random().nextInt(MAX_PROFILE_ID)+1;
+            req.setProfile("http://kevfischer.azubi.server.lan/data/profile-"+profilePictureId+".png");
+        }
         User user = createUserFromRequest(req);
 
         try {
             userRepository.save(user);
         } catch (DataIntegrityViolationException e ) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Already in Use");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "username is already taken");
         }
     }
 
@@ -102,7 +108,7 @@ public class UserController {
             String email = username + "@email.com";
             User user = createUserFromRequest(new RegisterRequest(username, "12345", name, email, null, null));
 
-            int profilePictureId = r.nextInt(41)+1;
+            int profilePictureId = r.nextInt(MAX_PROFILE_ID)+1;
             user.getProfile().setPictureUrl("http://kevfischer.azubi.server.lan/data/profile-"+profilePictureId+".png");
             user.getAppData().setCounter((long)r.nextInt(5000));
             try {

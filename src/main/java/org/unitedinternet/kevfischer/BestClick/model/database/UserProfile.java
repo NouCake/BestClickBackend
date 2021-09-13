@@ -21,7 +21,7 @@ public class UserProfile implements Serializable {
     @JoinColumn(name="profile_user_id")
     private User user;
 
-    @Column(length = 255, name="name")
+    @Column(length = 255, name="name", unique = false)
     private String name;
     @Column(length = 255, name="picture")
     private String pictureUrl;

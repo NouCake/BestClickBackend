@@ -80,7 +80,7 @@ public class AuthentificationUtil {
 
     public static User authUser(InsideLoginService service, RedisCache cache, UserAuthRepository authRepository, AuthRequest request) throws ResponseStatusException{
         if(request.getUsername() != null && request.getPassword() != null) {
-            UserAuthData authData = ControllerUtil.getOptionalOrThrowStatus(authRepository.findByUsername(request.getUsername().toLowerCase()), HttpStatus.NOT_FOUND);
+            UserAuthData authData = ControllerUtil.getOptionalOrThrowStatus(authRepository.findByUsername(request.getUsername().toLowerCase()), HttpStatus.NOT_FOUND, "username or passowrd wrong");
             if(!BCrypt.checkpw(request.getPassword(), authData.getPasswordHash())) return null;
             return new User(authData.getUserId(), null, null, authData);
         } else if(request.getTicket() != null) {
