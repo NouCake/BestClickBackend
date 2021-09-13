@@ -29,7 +29,7 @@ public class InsideLoginService {
 
     public ProviderInformation authentificateTicket(Ticket ticket) throws JsonProcessingException {
         String serviceUrl = "https://bestclick.azubi.server.lan/api/auth/login/inside?bestTicket="+ ticket.getTicketId();
-        String url = "https://login.1and1.org/ims-sso/serviceValidate?service=" + URLEncoder.encode(serviceUrl, StandardCharsets.UTF_8);
+        String url = "https://login.1and1.org/ims-sso/serviceValidate?service=" + serviceUrl;
         url += "&ticket=" + ticket.getProviderTicket();
 
         String response = null;
