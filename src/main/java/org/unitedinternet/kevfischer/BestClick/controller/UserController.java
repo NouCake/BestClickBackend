@@ -141,6 +141,8 @@ public class UserController {
             if(ticket.getProvider() == Ticket.PROVIDER.INSIDE) {
                 ProviderInformation info = ticket.getInformation();
                 authData.setInsideId(info.getProviderId());
+                profile.setPictureUrl(info.getPictureUrl());
+                profile.setEmail(info.getEmail());
             }
         }
         return user;

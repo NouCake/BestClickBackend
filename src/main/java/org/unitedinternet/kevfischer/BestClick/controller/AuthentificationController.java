@@ -54,6 +54,7 @@ public class AuthentificationController {
         } catch (AuthentificationUtil.UserNotRegisteredException e) {
             HashMap<String, String> values = new HashMap<>();
             values.put("action", "REGISTER");
+            values.put("username", e.getInfo().getUsername());
             values.put("name", e.getInfo().getName());
 
             return new ResponseEntity<>(values, HttpStatus.OK);
