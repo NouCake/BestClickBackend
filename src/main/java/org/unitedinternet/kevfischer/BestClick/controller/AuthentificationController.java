@@ -2,10 +2,7 @@ package org.unitedinternet.kevfischer.BestClick.controller;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -79,8 +76,9 @@ public class AuthentificationController {
         return ticket.getTicketId();
     }
 
-    @GetMapping("/login/inside")
-    public void loginInside(@RequestParam String ticket, @RequestParam String bestTicket){
+    @GetMapping(path="/login/inside", produces = MediaType.TEXT_HTML_VALUE)
+    @ResponseBody
+    public String loginInside(@RequestParam String ticket, @RequestParam String bestTicket){
         Ticket cachedTicket = redisCache.getTicket(bestTicket);
         if(cachedTicket == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "no ticket");
         cachedTicket.setProvider(Ticket.PROVIDER.INSIDE);
@@ -88,6 +86,7 @@ public class AuthentificationController {
         cachedTicket.setStatus(Ticket.STATUS.GOT);
 
         redisCache.cache(cachedTicket);
+        return "<html><head><script>window.close()</script></head><body>Tab is done. Closing it..</body></html>";
     }
 
     @PostMapping("/logout")
