@@ -18,6 +18,7 @@ public class RedisCache {
 
     private static final Duration cacheDuration = Duration.ofSeconds(15);
     private static final Duration ticketDuration = Duration.ofSeconds(60);
+    private static final Duration ticketRegisterDuration = Duration.ofMinutes(5);
     private static final Duration sessionDuration = Duration.ofDays(7);
 
     @Resource(name = "redisTemplate") private ValueOperations<String, LeaderboardPage> lbOperations;
@@ -39,7 +40,7 @@ public class RedisCache {
     }
 
     public void cache(Ticket ticket){
-        redisValueOperations.set(getKeyForTicket(ticket), ticket, ticketDuration);
+        redisValueOperations.set(getKeyForTicket(ticket), ticket, ticket.getInformation() == null ? ticketDuration : ticketRegisterDuration);
     }
 
     public void uncache(UUID session) {
