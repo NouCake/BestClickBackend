@@ -24,15 +24,8 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, LeaderboardPage> lbTemplate() {
-        RedisTemplate<String, LeaderboardPage> template = new RedisTemplate<>();
-        configTemplate(template);
-        return template;
-    }
-
-    @Bean
-    public RedisTemplate<String, Session> sessionTemplate() {
-        RedisTemplate<String, Session> template = new RedisTemplate<>();
+    public RedisTemplate<String, Object> redisTemplate() {
+        RedisTemplate<String, Object> template = new RedisTemplate<>();
         configTemplate(template);
         return template;
     }

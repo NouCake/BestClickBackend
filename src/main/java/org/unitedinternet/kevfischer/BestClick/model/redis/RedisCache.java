@@ -18,8 +18,9 @@ public class RedisCache {
     private static final Duration cacheDuration = Duration.ofSeconds(15);
     private static final Duration sessionDuration = Duration.ofDays(7);
 
-    @Resource(name = "lbTemplate") private ValueOperations<String, LeaderboardPage> lbOperations;
-    @Resource(name = "sessionTemplate") private HashOperations<String, String, Session> sessionOperations;
+    @Resource(name = "redisTemplate") private ValueOperations<String, LeaderboardPage> lbOperations;
+    @Resource(name = "redisTemplate") private HashOperations<String, String, Session> sessionOperations;
+    @Resource(name = "redisTemplate") private ValueOperations<String, Object> redisValueOperations;
 
     public LeaderboardPage getPage(int size, int page){
         String key = getKeyForPage(size, page);
@@ -34,6 +35,10 @@ public class RedisCache {
         sessionOperations.put("sessions", session.getSession().toString(), session);
         //sessionOperations.set(getKeyForSession(session), session, sessionDuration);
     }
+    public void cache(String key, Object toCache, Duration expires){
+        redisValueOperations.set(key, toCache, expires);
+    }
+
     public void uncache(UUID session) {
         sessionOperations.delete("sessions", session.toString());
         //sessionOperations.set(getKeyForSession(session), null, 1, TimeUnit.MILLISECONDS);
@@ -41,6 +46,10 @@ public class RedisCache {
 
     public Session getSession(UUID sessionId) {
         return sessionOperations.get("sessions", sessionId.toString());
+    }
+
+    public <T> T getObject(String key){
+        return (T)redisValueOperations.get(key);
     }
 
 

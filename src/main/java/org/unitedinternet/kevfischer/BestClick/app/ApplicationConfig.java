@@ -28,7 +28,7 @@ public class ApplicationConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry
                         .addMapping("/**")
-                        .allowedOrigins("http://localhost:3000", "http://kevfischer.azubi.server.lan/",  "http://10.16.129.225:3000/")
+                        .allowedOrigins("http://localhost:3000", "http://bestclick.azubi.server.lan/")
                         .allowedHeaders("*")
                         .allowedMethods("*")
                         .allowCredentials(true);

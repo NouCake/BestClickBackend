@@ -18,6 +18,7 @@ import org.unitedinternet.kevfischer.BestClick.model.repository.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.UUID;
+import java.time.Duration;
 
 @Controller
 @RequestMapping("/auth")
@@ -51,6 +52,33 @@ public class AuthentificationController {
         sessionRepository.saveSession(session.getExpires(), session.getUser().getId(), session.getSession());
         ResponseCookie cookie = AuthentificationUtil.createCookieFromSession(session);
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).build();
+    }
+
+    @GetMapping("/login/ticket")
+    public @ResponseBody String ticketInside(){
+        UUID ticket = UUID.randomUUID();
+        redisCache.cache(String.join(":", "ticket", ticket.toString()), "waiting", Duration.ofSeconds(60));
+        return ticket.toString();
+    }
+
+    @PostMapping("/login/ticket")
+    public @ResponseBody String ticketInside(@RequestParam String bestTicket){
+        String key = String.join(":", "ticket", bestTicket);
+        String ticketValue = redisCache.getObject(key);
+        if (ticketValue == null || "".equals(ticketValue) || "waiting".equals(ticketValue)){
+            return "NOPE!";
+        }
+        
+        
+        redisCache.cache(key, "done", Duration.ofSeconds(1));
+
+
+        return ticket.toString();
+    }
+
+    @GetMapping("/login/inside")
+    public loginInside(@RequestParam String ticket, @RequestParam String bestTicket){
+        redisCache.cache(String.join(":", "ticket", bestTicket), "INSIDE " + ticket), Duration.ofSeconds(60));
     }
 
     @PostMapping("/logout")
