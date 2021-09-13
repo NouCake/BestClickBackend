@@ -12,7 +12,9 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.unitedinternet.kevfischer.BestClick.controller.service.RandomGeneratorService;
+import org.unitedinternet.kevfischer.BestClick.model.ProviderInformation;
 import org.unitedinternet.kevfischer.BestClick.model.RegisterRequest;
+import org.unitedinternet.kevfischer.BestClick.model.Ticket;
 import org.unitedinternet.kevfischer.BestClick.model.database.*;
 import org.unitedinternet.kevfischer.BestClick.model.redis.RedisCache;
 import org.unitedinternet.kevfischer.BestClick.model.repository.SessionRepository;
@@ -98,7 +100,7 @@ public class UserController {
         for (String name : names) {
             String username = name.toLowerCase().replaceAll(" ", "");
             String email = username + "@email.com";
-            User user = createUserFromRequest(new RegisterRequest(username, "12345", name, email, null));
+            User user = createUserFromRequest(new RegisterRequest(username, "12345", name, email, null, null));
 
             int profilePictureId = r.nextInt(41)+1;
             user.getProfile().setPictureUrl("http://kevfischer.azubi.server.lan/data/profile-"+profilePictureId+".png");
@@ -134,6 +136,13 @@ public class UserController {
 
         String password = BCrypt.hashpw(req.getPassword(), BCrypt.gensalt(10));
         UserAuthData authData = new UserAuthData(user, req.getUsername().toLowerCase(), password);
+        if(req.getTicket() != null) {
+            Ticket ticket = redisCache.getTicket(req.getTicket());
+            if(ticket.getProvider() == Ticket.PROVIDER.INSIDE) {
+                ProviderInformation info = ticket.getInformation();
+                authData.setInsideId(info.getProviderId());
+            }
+        }
         return user;
     }
 

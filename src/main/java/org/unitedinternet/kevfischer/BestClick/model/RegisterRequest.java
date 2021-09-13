@@ -11,16 +11,26 @@ public class RegisterRequest {
     @NotNull private String name;
     private String email;
     private String profile;
+    private String ticket;
 
     public RegisterRequest() {
     }
 
-    public RegisterRequest(String username, String password, String name, String email, String profile) {
+    public RegisterRequest(String username, String password, String name, String email, String profile, String ticket) {
         this.username = username;
         this.password = password;
         this.name = name;
         this.email = email;
         this.profile = profile;
+        this.ticket = ticket;
+    }
+
+    public String getTicket() {
+        return ticket;
+    }
+
+    public void setTicket(String ticket) {
+        this.ticket = ticket;
     }
 
     public String getUsername() {

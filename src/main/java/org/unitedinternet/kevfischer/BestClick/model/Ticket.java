@@ -15,6 +15,15 @@ public class Ticket implements Serializable {
     private PROVIDER provider;
     private String providerTicket;
     private String ticketId;
+    private ProviderInformation information;
+
+    public ProviderInformation getInformation() {
+        return information;
+    }
+
+    public void setInformation(ProviderInformation information) {
+        this.information = information;
+    }
 
     public String getProviderTicket() {
         return providerTicket;

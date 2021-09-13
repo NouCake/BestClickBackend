@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.unitedinternet.kevfischer.BestClick.controller.service.InsideLoginService;
 import org.unitedinternet.kevfischer.BestClick.model.AuthRequest;
+import org.unitedinternet.kevfischer.BestClick.model.ProviderInformation;
 import org.unitedinternet.kevfischer.BestClick.model.Ticket;
 import org.unitedinternet.kevfischer.BestClick.model.database.User;
 import org.unitedinternet.kevfischer.BestClick.model.database.UserAuthData;
@@ -19,6 +20,7 @@ import org.unitedinternet.kevfischer.BestClick.model.redis.RedisCache;
 import org.unitedinternet.kevfischer.BestClick.model.repository.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
 import java.util.UUID;
 import java.time.Duration;
 
@@ -45,8 +47,17 @@ public class AuthentificationController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Session> login(@RequestBody AuthRequest request){
-        User user = AuthentificationUtil.authUser(insideService, redisCache, authRepository, request);
+    public ResponseEntity<?> login(@RequestBody AuthRequest request){
+        User user = null;
+        try {
+            user = AuthentificationUtil.authUser(insideService, redisCache, authRepository, request);
+        } catch (AuthentificationUtil.UserNotRegisteredException e) {
+            HashMap<String, String> values = new HashMap<>();
+            values.put("action", "REGISTER");
+            values.put("name", e.getInfo().getName());
+
+            return new ResponseEntity<>(values, HttpStatus.OK);
+        }
         if(user == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "could not auth");
         }

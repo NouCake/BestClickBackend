@@ -23,6 +23,22 @@ import java.util.UUID;
 
 public class AuthentificationUtil {
 
+    public static class UserNotRegisteredException extends RuntimeException {
+        private ProviderInformation info;
+
+        public UserNotRegisteredException(ProviderInformation info) {
+            this.info = info;
+        }
+
+        public ProviderInformation getInfo() {
+            return info;
+        }
+
+        public void setInfo(ProviderInformation info) {
+            this.info = info;
+        }
+    }
+
     public static Session auth(RedisCache cache, SessionRepository sessionRepository, HttpServletRequest request) throws ResponseStatusException{
         String sessionId = ControllerUtil.getCookieOrThrowStatus(request, "session", HttpStatus.BAD_REQUEST);
         Session session = cache.getSession(UUID.fromString(sessionId));
@@ -80,16 +96,23 @@ public class AuthentificationUtil {
         if(ticket.getStatus() == Ticket.STATUS.WAITING) throw new ResponseStatusException(HttpStatus.TOO_EARLY, "ticket waiting");
 
         if(ticket.getProvider() == Ticket.PROVIDER.INSIDE)
-            return authInsideTicket(authRepository, service, ticket);
+            return authInsideTicket(authRepository, cache, service, ticket);
 
         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    private static User authInsideTicket(UserAuthRepository authRepository, InsideLoginService service, Ticket ticket){
+    private static User authInsideTicket(UserAuthRepository authRepository, RedisCache cache, InsideLoginService service, Ticket ticket){
         try {
             ProviderInformation providerInfo = service.authentificateTicket(ticket);
             if(providerInfo == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad Ticket");
-            UserAuthData authData = ControllerUtil.getOptionalOrThrowStatus(authRepository.findByInsideId(providerInfo.getProviderId()), HttpStatus.NOT_FOUND, "REGISTER");
+            var oAuthData = authRepository.findByInsideId(providerInfo.getProviderId());
+
+            if(oAuthData.isEmpty()) {
+                ticket.setInformation(providerInfo);
+                cache.cache(ticket);
+                throw new UserNotRegisteredException(providerInfo);
+            }
+            UserAuthData authData = oAuthData.get();
             return new User(authData.getUserId(), null, null, authData);
         } catch (JsonProcessingException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "jackson error");
