@@ -10,6 +10,7 @@ import org.unitedinternet.kevfischer.BestClick.model.database.User;
 import org.unitedinternet.kevfischer.BestClick.model.database.UserAuthData;
 import org.unitedinternet.kevfischer.BestClick.model.redis.RedisCache;
 import org.unitedinternet.kevfischer.BestClick.model.repository.SessionRepository;
+import org.unitedinternet.kevfischer.BestClick.model.repository.UserAuthRepository;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.Duration;
@@ -17,7 +18,6 @@ import java.util.Date;
 import java.util.UUID;
 
 public class AuthentificationUtil {
-
 
     public static Session auth(RedisCache cache, SessionRepository sessionRepository, HttpServletRequest request) throws ResponseStatusException{
         String sessionId = ControllerUtil.getCookieOrThrowStatus(request, "session", HttpStatus.BAD_REQUEST);
@@ -58,8 +58,36 @@ public class AuthentificationUtil {
                 .build();
     }
 
-    public static boolean authUser(UserAuthData authData, AuthRequest request){
-        return BCrypt.checkpw(request.getPassword(), authData.getPasswordHash());
+    public static User authUser(RedisCache cache, UserAuthRepository authRepository, AuthRequest request) throws ResponseStatusException{
+        if(request.getUsername() != null && request.getPassword() != null) {
+            UserAuthData authData = ControllerUtil.getOptionalOrThrowStatus(authRepository.findByUsername(request.getUsername().toLowerCase()), HttpStatus.NOT_FOUND);
+            if(!BCrypt.checkpw(request.getPassword(), authData.getPasswordHash())) return null;
+            return new User(authData.getUserId(), null, null, authData);
+        } else if(request.getTicket() != null) {
+            return authTicket(cache, request);
+        }
+        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "bad auth method");
+    }
+
+    private static User authTicket(RedisCache cache, AuthRequest request){
+        String key = String.join(":", "ticket", request.getTicket());
+        String ticketValue = cache.getObject(key);
+
+        if(ticketValue == null || "done".equals(ticketValue)) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "no ticket/already done");
+        if("waiting".equals(ticketValue)) throw new ResponseStatusException(HttpStatus.TOO_EARLY, "ticket waiting");
+
+        String[] parts = ticketValue.split(" ");
+        if(parts.length < 2) throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+
+        if(parts[0].equals("INSIDE")) return authInsideTicket(parts[1]);
+        //else if(parts[1].equals("~~~~")) return null;
+
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private static User authInsideTicket(String insideTicket){
+        
+        return null;
     }
 
     public static boolean isSessionExpired(Session session){

@@ -43,12 +43,12 @@ public class AuthentificationController {
 
     @PostMapping("/login")
     public ResponseEntity<Session> login(@RequestBody AuthRequest request){
-        UserAuthData authData = ControllerUtil.getOptionalOrThrowStatus(authRepository.findByUsername(request.getUsername().toLowerCase()), HttpStatus.NOT_FOUND);
-        if(!AuthentificationUtil.authUser(authData, request)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        User user = AuthentificationUtil.authUser(redisCache, authRepository, request);
+        if(user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "could not auth");
         }
 
-        Session session = AuthentificationUtil.createNewSession(authData.getUserId());
+        Session session = AuthentificationUtil.createNewSession(user.getId());
         sessionRepository.saveSession(session.getExpires(), session.getUser().getId(), session.getSession());
         ResponseCookie cookie = AuthentificationUtil.createCookieFromSession(session);
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).build();
@@ -61,24 +61,9 @@ public class AuthentificationController {
         return ticket.toString();
     }
 
-    @PostMapping("/login/ticket")
-    public @ResponseBody String ticketInside(@RequestParam String bestTicket){
-        String key = String.join(":", "ticket", bestTicket);
-        String ticketValue = redisCache.getObject(key);
-        if (ticketValue == null || "".equals(ticketValue) || "waiting".equals(ticketValue)){
-            return "NOPE!";
-        }
-        
-        
-        redisCache.cache(key, "done", Duration.ofSeconds(1));
-
-
-        return ticket.toString();
-    }
-
     @GetMapping("/login/inside")
-    public loginInside(@RequestParam String ticket, @RequestParam String bestTicket){
-        redisCache.cache(String.join(":", "ticket", bestTicket), "INSIDE " + ticket), Duration.ofSeconds(60));
+    public void loginInside(@RequestParam String ticket, @RequestParam String bestTicket){
+        redisCache.cache(String.join(":", "ticket", bestTicket), "INSIDE " + ticket, Duration.ofSeconds(60));
     }
 
     @PostMapping("/logout")

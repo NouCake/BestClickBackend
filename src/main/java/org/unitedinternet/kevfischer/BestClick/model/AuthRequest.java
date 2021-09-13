@@ -4,6 +4,15 @@ public class AuthRequest {
 
     private String username;
     private String password;
+    private String ticket;
+
+    public String getTicket() {
+        return ticket;
+    }
+
+    public void setTicket(String ticket) {
+        this.ticket = ticket;
+    }
 
     public String getUsername() {
         return username;
