@@ -22,8 +22,13 @@ public class UserAuthData implements Serializable {
     @JoinColumn(name="auth_user_id")
     private User user;
 
+    @Column(unique = true)
     private String username;
+
     private String passwordHash;
+
+    @Column(unique = true)
+    private String insideId;
 
     public UserAuthData(User user, String username, String passwordHash) {
         this.user = user;
@@ -32,6 +37,14 @@ public class UserAuthData implements Serializable {
 
         this.userId = user.getId();
         user.setAuthData(this);
+    }
+
+    public String getInsideId() {
+        return insideId;
+    }
+
+    public void setInsideId(String insideId) {
+        this.insideId = insideId;
     }
 
     public UserAuthData() {

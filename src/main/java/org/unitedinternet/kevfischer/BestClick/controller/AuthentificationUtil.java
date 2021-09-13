@@ -1,10 +1,14 @@
 package org.unitedinternet.kevfischer.BestClick.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.web.server.ResponseStatusException;
+import org.unitedinternet.kevfischer.BestClick.controller.service.InsideLoginService;
 import org.unitedinternet.kevfischer.BestClick.model.AuthRequest;
+import org.unitedinternet.kevfischer.BestClick.model.ProviderInformation;
+import org.unitedinternet.kevfischer.BestClick.model.Ticket;
 import org.unitedinternet.kevfischer.BestClick.model.database.Session;
 import org.unitedinternet.kevfischer.BestClick.model.database.User;
 import org.unitedinternet.kevfischer.BestClick.model.database.UserAuthData;
@@ -58,36 +62,38 @@ public class AuthentificationUtil {
                 .build();
     }
 
-    public static User authUser(RedisCache cache, UserAuthRepository authRepository, AuthRequest request) throws ResponseStatusException{
+    public static User authUser(InsideLoginService service, RedisCache cache, UserAuthRepository authRepository, AuthRequest request) throws ResponseStatusException{
         if(request.getUsername() != null && request.getPassword() != null) {
             UserAuthData authData = ControllerUtil.getOptionalOrThrowStatus(authRepository.findByUsername(request.getUsername().toLowerCase()), HttpStatus.NOT_FOUND);
             if(!BCrypt.checkpw(request.getPassword(), authData.getPasswordHash())) return null;
             return new User(authData.getUserId(), null, null, authData);
         } else if(request.getTicket() != null) {
-            return authTicket(cache, request);
+            return authTicket(authRepository, service,cache, request);
         }
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "bad auth method");
     }
 
-    private static User authTicket(RedisCache cache, AuthRequest request){
-        String key = String.join(":", "ticket", request.getTicket());
-        String ticketValue = cache.getObject(key);
+    private static User authTicket(UserAuthRepository authRepository, InsideLoginService service, RedisCache cache, AuthRequest request){
+        Ticket ticket = cache.getTicket(request.getTicket());
 
-        if(ticketValue == null || "done".equals(ticketValue)) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "no ticket/already done");
-        if("waiting".equals(ticketValue)) throw new ResponseStatusException(HttpStatus.TOO_EARLY, "ticket waiting");
+        if(ticket == null || ticket.getStatus() == Ticket.STATUS.DONE) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "no ticket/already done");
+        if(ticket.getStatus() == Ticket.STATUS.WAITING) throw new ResponseStatusException(HttpStatus.TOO_EARLY, "ticket waiting");
 
-        String[] parts = ticketValue.split(" ");
-        if(parts.length < 2) throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-
-        if(parts[0].equals("INSIDE")) return authInsideTicket(parts[1]);
-        //else if(parts[1].equals("~~~~")) return null;
+        if(ticket.getProvider() == Ticket.PROVIDER.INSIDE)
+            return authInsideTicket(authRepository, service, ticket);
 
         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    private static User authInsideTicket(String insideTicket){
-        
-        return null;
+    private static User authInsideTicket(UserAuthRepository authRepository, InsideLoginService service, Ticket ticket){
+        try {
+            ProviderInformation providerInfo = service.authentificateTicket(ticket);
+            if(providerInfo == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad Ticket");
+            UserAuthData authData = ControllerUtil.getOptionalOrThrowStatus(authRepository.findByInsideId(providerInfo.getProviderId()), HttpStatus.NOT_FOUND, "REGISTER");
+            return new User(authData.getUserId(), null, null, authData);
+        } catch (JsonProcessingException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "jackson error");
+        }
     }
 
     public static boolean isSessionExpired(Session session){

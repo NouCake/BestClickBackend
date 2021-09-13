@@ -15,6 +15,11 @@ public class ControllerUtil {
         return optional.get();
     }
 
+    public static <T> T getOptionalOrThrowStatus(Optional<T> optional, HttpStatus status, String message){
+        if(optional.isEmpty()) throw new ResponseStatusException(status, message);
+        return optional.get();
+    }
+
     public static <T> T getOptionalOrThrowStatus(Optional<T> optional){
         return getOptionalOrThrowStatus(optional, HttpStatus.NOT_FOUND);
     }

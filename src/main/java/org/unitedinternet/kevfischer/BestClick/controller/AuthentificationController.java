@@ -9,7 +9,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.unitedinternet.kevfischer.BestClick.controller.service.InsideLoginService;
 import org.unitedinternet.kevfischer.BestClick.model.AuthRequest;
+import org.unitedinternet.kevfischer.BestClick.model.Ticket;
 import org.unitedinternet.kevfischer.BestClick.model.database.User;
 import org.unitedinternet.kevfischer.BestClick.model.database.UserAuthData;
 import org.unitedinternet.kevfischer.BestClick.model.database.Session;
@@ -30,6 +32,7 @@ public class AuthentificationController {
     @Autowired private UserAuthRepository authRepository;
     @Autowired private UserProfileRepository profileRepository;
     @Autowired private UserAppRepository appRepository;
+    @Autowired private InsideLoginService insideService;
 
     @GetMapping("/")
     public @ResponseBody Session auth(HttpServletRequest request){
@@ -43,7 +46,7 @@ public class AuthentificationController {
 
     @PostMapping("/login")
     public ResponseEntity<Session> login(@RequestBody AuthRequest request){
-        User user = AuthentificationUtil.authUser(redisCache, authRepository, request);
+        User user = AuthentificationUtil.authUser(insideService, redisCache, authRepository, request);
         if(user == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "could not auth");
         }
@@ -56,14 +59,22 @@ public class AuthentificationController {
 
     @GetMapping("/login/ticket")
     public @ResponseBody String ticketInside(){
-        UUID ticket = UUID.randomUUID();
-        redisCache.cache(String.join(":", "ticket", ticket.toString()), "waiting", Duration.ofSeconds(60));
-        return ticket.toString();
+        Ticket ticket = new Ticket();
+        ticket.setTicketId(UUID.randomUUID().toString());
+        ticket.setStatus(Ticket.STATUS.WAITING);
+        redisCache.cache(ticket);
+
+        return ticket.getTicketId();
     }
 
     @GetMapping("/login/inside")
     public void loginInside(@RequestParam String ticket, @RequestParam String bestTicket){
-        redisCache.cache(String.join(":", "ticket", bestTicket), "INSIDE " + ticket, Duration.ofSeconds(60));
+        Ticket cachedTicket = redisCache.getTicket(bestTicket);
+        if(cachedTicket == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "no ticket");
+        cachedTicket.setProvider(Ticket.PROVIDER.INSIDE);
+        cachedTicket.setStatus(Ticket.STATUS.GOT);
+
+        redisCache.cache(cachedTicket);
     }
 
     @PostMapping("/logout")
