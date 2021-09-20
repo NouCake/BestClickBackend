@@ -44,6 +44,7 @@ public class AuthentificationController {
     }
 
     @PostMapping("/login")
+    @ResponseBody
     public ResponseEntity<?> login(@RequestBody AuthRequest request){
         User user = null;
         try {
@@ -53,7 +54,8 @@ public class AuthentificationController {
             values.put("action", "REGISTER");
             values.put("username", e.getInfo().getUsername());
             values.put("name", e.getInfo().getName());
-            return new ResponseEntity<>(values, HttpStatus.OK);
+            System.out.println("All Okay!");
+            return new ResponseEntity<>(values, HttpStatus.I_AM_A_TEAPOT);
         }
         if(user == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "could not auth");
