@@ -1,5 +1,6 @@
 package org.unitedinternet.kevfischer.BestClick.controller;
 
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -22,6 +23,7 @@ public class AppController {
     @PostMapping("/add")
     @ResponseStatus(HttpStatus.OK)
     public @ResponseBody int add(HttpServletRequest request, @RequestParam(defaultValue = "1") int counter){
+        if(counter > 100) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cheater!");
         Session session = AuthentificationUtil.auth(redisCache, sessionRepository, request);
         return appRepository.incrCounter(counter, session.getUser().getId().toString());
     }
